@@ -1,0 +1,13 @@
+sequenceDiagram
+  participant Dev as Developer
+  participant GH as GitHub
+  participant GA as GitHub Actions
+  participant ACR as Azure Container Registry
+  participant AKS as AKS
+
+  Dev->>GH: Push code (main)
+  GH->>GA: Trigger workflow
+  GA->>GA: Build & Test
+  GA->>ACR: Push image
+  GA->>AKS: kubectl apply / set image
+  AKS->>Dev: App available (LoadBalancer)

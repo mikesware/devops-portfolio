@@ -1,0 +1,37 @@
+name: Security Scan
+
+on:
+  push:
+    branches: [ 'main' ]
+  schedule:
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+
+env:
+  ACR: ${{ secrets.ACR_LOGIN_SERVER }}
+  APP_IMAGE: devops-app:latest
+
+jobs:
+  nmap-and-trivy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Nmap & Python deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y nmap python3-pip
+          python -V
+
+      - name: Run Nmap scan (lab CIDR)
+        run: python project3_devsecops_scanner/scripts/scan.py
+
+      - name: Trivy image scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.ACR }}/${{ env.APP_IMAGE }}
+          format: 'table'
+          exit-code: '0'     # don't fail pipeline on findings (demo)
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
